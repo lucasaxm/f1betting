@@ -1,0 +1,5 @@
+spring:
+  application.name: f1betting
+  docker:
+    compose:
+      enabled: false
