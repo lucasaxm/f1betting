@@ -11,3 +11,11 @@ spring:
   docker:
     compose:
       enabled: true
+
+f1-external-api:
+  active-provider: openf1
+  providers:
+    openf1:
+      url: https://api.openf1.org
+    ergast:
+      url: https://ergast.com/api/f1
