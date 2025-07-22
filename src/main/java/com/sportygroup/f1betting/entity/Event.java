@@ -15,6 +15,7 @@ import lombok.Setter;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.UUID;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -43,6 +44,10 @@ public class Event {
     @NotNull
     @Column(name = "type", nullable = false, length = 50)
     private String type;
+
+    @NotNull
+    @Column(name = "date_start", nullable = false)
+    private OffsetDateTime dateStart;
 
     @Column(name = "winner_driver_id")
     private UUID winnerDriverId;

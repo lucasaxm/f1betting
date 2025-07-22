@@ -21,7 +21,7 @@ public record OpenF1SessionDto(String sessionKey,
             .eventType(this.sessionType)
             .year(this.year)
             .countryName(this.countryName)
-            .startDate(OffsetDateTime.parse(dateStart))
+            .dateStart(OffsetDateTime.parse(dateStart))
             .build();
     }
 }

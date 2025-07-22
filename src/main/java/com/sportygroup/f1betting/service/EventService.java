@@ -37,7 +37,7 @@ public class EventService {
                 .eventType(event.getType())
                 .year(event.getYear())
                 .countryName(event.getCountry())
-                .startDate(null)
+                .dateStart(event.getDateStart())
                 .build();
         });
     }

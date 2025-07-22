@@ -16,6 +16,7 @@ import java.time.Instant;
 import java.time.Year;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,25 +50,34 @@ public class SyncService {
 
         List<EventDto> events = f1ExternalApi.listEvents(year, null, null);
         for (EventDto dto : events) {
-            if (eventExternalRefRepository
-                .findByProviderNameAndExternalId(dto.providerName(), dto.externalEventId())
-                .isEmpty()) {
-                Event e = new Event();
-                e.setName(dto.eventName());
-                e.setYear(dto.year());
-                e.setCountry(dto.countryName());
-                e.setType(dto.eventType());
-                eventRepository.save(e);
-
-                EventExternalRef ref = new EventExternalRef();
-                ref.setProviderName(dto.providerName());
-                ref.setExternalId(dto.externalEventId());
-                ref.setEvent(e);
-                eventExternalRefRepository.save(ref);
-            }
+            upsertEvent(dto);
         }
 
         status.setLastSynced(now);
         syncStatusRepository.save(status);
+    }
+
+    void upsertEvent(EventDto dto) {
+        Optional<Event> existing = eventRepository
+            .findByCountryAndDateStart(dto.countryName(), dto.dateStart());
+        Event event = existing.orElseGet(() -> {
+            Event e = new Event();
+            e.setName(dto.eventName());
+            e.setYear(dto.year());
+            e.setCountry(dto.countryName());
+            e.setType(dto.eventType());
+            e.setDateStart(dto.dateStart());
+            return eventRepository.save(e);
+        });
+
+        eventExternalRefRepository
+            .findByProviderNameAndExternalId(dto.providerName(), dto.externalEventId())
+            .orElseGet(() -> {
+                EventExternalRef ref = new EventExternalRef();
+                ref.setProviderName(dto.providerName());
+                ref.setExternalId(dto.externalEventId());
+                ref.setEvent(event);
+                return eventExternalRefRepository.save(ref);
+            });
     }
 }

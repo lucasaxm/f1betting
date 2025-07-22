@@ -5,6 +5,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import java.time.OffsetDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface EventRepository extends JpaRepository<Event, UUID> {
@@ -16,4 +18,6 @@ public interface EventRepository extends JpaRepository<Event, UUID> {
               and (:country is null or e.country = :country)
             """)
     Page<Event> findByFilter(Integer year, String type, String country, Pageable pageable);
+
+    Optional<Event> findByCountryAndDateStart(String country, OffsetDateTime dateStart);
 }
