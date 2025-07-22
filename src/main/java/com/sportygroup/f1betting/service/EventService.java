@@ -1,27 +1,32 @@
 package com.sportygroup.f1betting.service;
 
-import com.sportygroup.f1betting.external.F1ExternalApi;
-import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.entity.Event;
+import com.sportygroup.f1betting.external.dto.response.EventResponseDto;
+import com.sportygroup.f1betting.repository.EventRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Year;
+
 @Service
+@RequiredArgsConstructor
 public class EventService {
-    private final F1ExternalApi f1ExternalApi;
+    private final SyncService syncService;
+    private final EventRepository eventRepository;
 
-    public EventService(F1ExternalApi f1ExternalApi) {
-        this.f1ExternalApi = f1ExternalApi;
-    }
+    public Page<EventResponseDto> getEventsPage(Integer year, String type, String country, Pageable pageable) {
+        int syncYear = year != null ? year : Year.now().getValue();
+        try {
+            syncService.syncYear(syncYear);
+        } catch (RuntimeException ex) {
+            if (syncYear == Year.now().getValue()) {
+                throw ex;
+            }
+        }
 
-    public Page<EventDto> getEventsPage(Integer year, String type, String country, Pageable pageable) {
-        var events = f1ExternalApi.listEvents(year, type, country);
-        int total = events.size();
-        var pageContent = events.stream()
-            .skip(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .toList();
-        return new PageImpl<>(pageContent, pageable, total);
+        Page<Event> page = eventRepository.findByFilter(year, type, country, pageable);
+        return page.map(EventResponseDto::new);
     }
 }
