@@ -1,8 +1,7 @@
 package com.sportygroup.f1betting.service;
 
 import com.sportygroup.f1betting.entity.Event;
-import com.sportygroup.f1betting.entity.EventExternalRef;
-import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.external.dto.response.EventResponseDto;
 import com.sportygroup.f1betting.repository.EventRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,7 +16,7 @@ public class EventService {
     private final SyncService syncService;
     private final EventRepository eventRepository;
 
-    public Page<EventDto> getEventsPage(Integer year, String type, String country, Pageable pageable) {
+    public Page<EventResponseDto> getEventsPage(Integer year, String type, String country, Pageable pageable) {
         int syncYear = year != null ? year : Year.now().getValue();
         try {
             syncService.syncYear(syncYear);
@@ -28,17 +27,6 @@ public class EventService {
         }
 
         Page<Event> page = eventRepository.findByFilter(year, type, country, pageable);
-        return page.map(event -> {
-            EventExternalRef ref = event.getEventExternalRefs().stream().findFirst().orElse(null);
-            return EventDto.builder()
-                .externalEventId(ref != null ? ref.getExternalId() : null)
-                .providerName(ref != null ? ref.getProviderName() : null)
-                .eventName(event.getName())
-                .eventType(event.getType())
-                .year(event.getYear())
-                .countryName(event.getCountry())
-                .dateStart(event.getDateStart())
-                .build();
-        });
+        return page.map(EventResponseDto::new);
     }
 }

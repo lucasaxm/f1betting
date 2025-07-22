@@ -1,6 +1,6 @@
 package com.sportygroup.f1betting.external.dto.openf1;
 
-import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 
 import java.time.OffsetDateTime;
 
@@ -13,8 +13,8 @@ public record OpenF1SessionDto(String sessionKey,
                                String dateStart,
                                String dateEnd) {
 
-    public EventDto toEventSearchDto() {
-        return EventDto.builder()
+    public ExternalEventDto toEventSearchDto() {
+        return ExternalEventDto.builder()
             .externalEventId(this.sessionKey)
             .providerName("openf1")
             .eventName(this.sessionName)

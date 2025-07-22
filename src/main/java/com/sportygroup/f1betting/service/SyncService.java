@@ -4,7 +4,7 @@ import com.sportygroup.f1betting.entity.Event;
 import com.sportygroup.f1betting.entity.EventExternalRef;
 import com.sportygroup.f1betting.entity.SyncStatus;
 import com.sportygroup.f1betting.external.F1ExternalApi;
-import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 import com.sportygroup.f1betting.repository.EventExternalRefRepository;
 import com.sportygroup.f1betting.repository.EventRepository;
 import com.sportygroup.f1betting.repository.SyncStatusRepository;
@@ -53,9 +53,9 @@ public class SyncService {
             return;
         }
 
-        List<EventDto> events = f1ExternalApi.listEvents(year, null, null);
+        List<ExternalEventDto> events = f1ExternalApi.listEvents(year, null, null);
         log.info("Fetched {} events for year {}", events.size(), year);
-        for (EventDto dto : events) {
+        for (ExternalEventDto dto : events) {
             upsertEvent(dto);
         }
 
@@ -64,7 +64,7 @@ public class SyncService {
         log.info("Sync for year {} finished", year);
     }
 
-    void upsertEvent(EventDto dto) {
+    void upsertEvent(ExternalEventDto dto) {
         Optional<Event> existing = eventRepository
             .findByCountryAndDateStart(dto.countryName(), dto.dateStart());
         Event event = existing.orElseGet(() -> {

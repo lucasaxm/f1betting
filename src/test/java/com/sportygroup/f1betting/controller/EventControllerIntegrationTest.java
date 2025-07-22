@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sportygroup.f1betting.entity.Event;
 import com.sportygroup.f1betting.entity.EventExternalRef;
+import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 import com.sportygroup.f1betting.repository.EventExternalRefRepository;
 import com.sportygroup.f1betting.repository.EventRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.OffsetDateTime;
@@ -20,43 +24,21 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(properties = {
-        "spring.flyway.enabled=false",
-        "spring.jpa.properties.hibernate.globally_quoted_identifiers=true",
-        "f1-external-api.active-provider=openf1",
-        "f1-external-api.providers.openf1.url=http://localhost",
-        "f1-external-api.min-year=2020",
-        "spring.main.allow-bean-definition-overriding=true"})
+    "spring.flyway.enabled=false",
+    "spring.jpa.properties.hibernate.globally_quoted_identifiers=true",
+    "f1-external-api.active-provider=openf1",
+    "f1-external-api.providers.openf1.url=http://localhost",
+    "f1-external-api.min-year=2020",
+    "spring.main.allow-bean-definition-overriding=true"})
 @AutoConfigureMockMvc
 class EventControllerIntegrationTest {
 
-    @org.springframework.boot.test.context.TestConfiguration
-    static class TestConfig {
-        @org.springframework.context.annotation.Bean
-        @org.springframework.context.annotation.Primary
-        public com.sportygroup.f1betting.external.F1ExternalApi f1ExternalApi() {
-            return new com.sportygroup.f1betting.external.F1ExternalApi() {
-                @Override
-                public java.util.List<com.sportygroup.f1betting.external.dto.EventDto> listEvents(Integer year, String type, String country) {
-                    return java.util.Collections.emptyList();
-                }
-
-                @Override
-                public java.util.List<com.sportygroup.f1betting.external.dto.DriverDto> listDrivers(String externalEventId) {
-                    return java.util.Collections.emptyList();
-                }
-            };
-        }
-    }
-
     @Autowired
     MockMvc mockMvc;
-
     @Autowired
     ObjectMapper objectMapper;
-
     @Autowired
     EventRepository eventRepository;
-
     @Autowired
     EventExternalRefRepository eventExternalRefRepository;
 
@@ -95,11 +77,11 @@ class EventControllerIntegrationTest {
     @Test
     void getEventsReturnsSortedPageWithDateStart() throws Exception {
         String json = mockMvc.perform(get("/v1/events")
-                        .param("country", "Belgium")
-                        .param("page", "0")
-                        .param("size", "10"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .param("country", "Belgium")
+                .param("page", "0")
+                .param("size", "10"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
 
         JsonNode root = objectMapper.readTree(json);
         assertThat(root.get("total_elements").asInt()).isEqualTo(2);
@@ -112,10 +94,10 @@ class EventControllerIntegrationTest {
     @Test
     void sortByDateStartAscending() throws Exception {
         String json = mockMvc.perform(get("/v1/events")
-                        .param("country", "Belgium")
-                        .param("sort", "date_start,asc"))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsString();
+                .param("country", "Belgium")
+                .param("sort", "date_start,asc"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
 
         JsonNode content = objectMapper.readTree(json).get("content");
         assertThat(content.get(0).get("year").asInt()).isEqualTo(2023);
@@ -124,11 +106,33 @@ class EventControllerIntegrationTest {
     @Test
     void unknownSortFieldReturns400() throws Exception {
         String json = mockMvc.perform(get("/v1/events")
-                        .param("sort", "foo,asc"))
-                .andExpect(status().isBadRequest())
-                .andReturn().getResponse().getContentAsString();
+                .param("sort", "foo,asc"))
+            .andExpect(status().isBadRequest())
+            .andReturn().getResponse().getContentAsString();
 
         JsonNode root = objectMapper.readTree(json);
         assertThat(root.get("error").asText()).isEqualTo("INVALID_SORT_FIELD");
+    }
+
+    @TestConfiguration
+    static class TestConfig {
+        @Bean
+        @Primary
+        public com.sportygroup.f1betting.external.F1ExternalApi f1ExternalApi() {
+            return new com.sportygroup.f1betting.external.F1ExternalApi() {
+                @Override
+                public java.util.List<ExternalEventDto> listEvents(Integer year,
+                                                                   String type,
+                                                                   String country) {
+                    return java.util.Collections.emptyList();
+                }
+
+                @Override
+                public java.util.List<com.sportygroup.f1betting.external.dto.DriverDto> listDrivers(
+                    String externalEventId) {
+                    return java.util.Collections.emptyList();
+                }
+            };
+        }
     }
 }

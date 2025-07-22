@@ -1,7 +1,7 @@
 package com.sportygroup.f1betting.external;
 
 import com.sportygroup.f1betting.external.dto.DriverDto;
-import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 
 import java.util.List;
 
@@ -10,9 +10,9 @@ import java.util.List;
  */
 public interface F1ExternalApi {
 
-    List<EventDto> listEvents(Integer year,
-                              String type,   // "Race", "Sprint", …
-                              String country);      // "Belgium", …
+    List<ExternalEventDto> listEvents(Integer year,
+                                      String type,   // "Race", "Sprint", …
+                                      String country);      // "Belgium", …
 
     List<DriverDto> listDrivers(String externalEventId);       // optional ‑ pass null for “all”
 }
