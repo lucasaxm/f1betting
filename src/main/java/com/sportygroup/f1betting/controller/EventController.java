@@ -24,7 +24,7 @@ public class EventController {
                                     String country,
                                     @PageableDefault(size = 20)
                                     @SortDefault.SortDefaults({
-                                        @SortDefault(sort = "year", direction = org.springframework.data.domain.Sort.Direction.DESC),
+                                        @SortDefault(sort = "dateStart", direction = org.springframework.data.domain.Sort.Direction.ASC),
                                         @SortDefault(sort = "name", direction = org.springframework.data.domain.Sort.Direction.ASC)
                                     }) Pageable pageable) {
         return eventService.getEventsPage(year, type, country, pageable);
