@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sportygroup.f1betting.entity.Event;
 import com.sportygroup.f1betting.entity.EventExternalRef;
+import com.sportygroup.f1betting.entity.ProviderName;
 import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 import com.sportygroup.f1betting.repository.EventExternalRefRepository;
 import com.sportygroup.f1betting.repository.EventRepository;
@@ -55,7 +56,7 @@ class EventControllerIntegrationTest {
         e1.setDateStart(OffsetDateTime.parse("2023-08-27T14:00:00Z"));
         eventRepository.save(e1);
         EventExternalRef ref1 = new EventExternalRef();
-        ref1.setProviderName("openf1");
+        ref1.setProviderName(ProviderName.OPENF1);
         ref1.setExternalId("1");
         ref1.setEvent(e1);
         eventExternalRefRepository.save(ref1);
@@ -68,7 +69,7 @@ class EventControllerIntegrationTest {
         e2.setDateStart(OffsetDateTime.parse("2024-08-25T14:00:00Z"));
         eventRepository.save(e2);
         EventExternalRef ref2 = new EventExternalRef();
-        ref2.setProviderName("openf1");
+        ref2.setProviderName(ProviderName.OPENF1);
         ref2.setExternalId("2");
         ref2.setEvent(e2);
         eventExternalRefRepository.save(ref2);

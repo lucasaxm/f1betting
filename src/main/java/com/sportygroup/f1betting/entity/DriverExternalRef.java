@@ -10,6 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -18,6 +20,8 @@ import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
+
+import com.sportygroup.f1betting.entity.ProviderName;
 
 @Getter
 @Setter
@@ -31,10 +35,10 @@ public class DriverExternalRef {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Size(max = 50)
+    @Enumerated(EnumType.STRING)
     @NotNull
     @Column(name = "provider_name", nullable = false, length = 50)
-    private String providerName;
+    private ProviderName providerName;
 
     @Size(max = 100)
     @NotNull

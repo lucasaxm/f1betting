@@ -2,6 +2,8 @@ package com.sportygroup.f1betting.service;
 
 import com.sportygroup.f1betting.external.F1ExternalApi;
 import com.sportygroup.f1betting.external.dto.ExternalEventDto;
+import com.sportygroup.f1betting.entity.ProviderName;
+import com.sportygroup.f1betting.properties.F1ApiProperties;
 import com.sportygroup.f1betting.repository.EventExternalRefRepository;
 import com.sportygroup.f1betting.repository.EventRepository;
 import com.sportygroup.f1betting.repository.SyncStatusRepository;
@@ -31,7 +33,7 @@ class SyncServiceTest {
 
         ExternalEventDto first = ExternalEventDto.builder()
             .externalEventId("A")
-            .providerName("openf1")
+            .providerName(ProviderName.OPENF1)
             .eventName("Race")
             .eventType("Race")
             .year(2024)
@@ -42,7 +44,7 @@ class SyncServiceTest {
 
         ExternalEventDto second = ExternalEventDto.builder()
             .externalEventId("B")
-            .providerName("ergast")
+            .providerName(ProviderName.ERGAST)
             .eventName("Race")
             .eventType("Race")
             .year(2024)
@@ -68,6 +70,8 @@ class SyncServiceTest {
                 return Collections.emptyList();
             }
         };
-        return new SyncService(syncStatusRepository, eventRepository, eventExternalRefRepository, dummy);
+        F1ApiProperties props = new F1ApiProperties();
+        props.setActiveProvider("openf1");
+        return new SyncService(syncStatusRepository, eventRepository, eventExternalRefRepository, dummy, props);
     }
 }
