@@ -10,8 +10,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
+import jakarta.persistence.Convert;
+import com.sportygroup.f1betting.entity.ProviderNameConverter;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public class DriverExternalRef {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = ProviderNameConverter.class)
     @NotNull
     @Column(name = "provider_name", nullable = false, length = 50)
     private ProviderName providerName;

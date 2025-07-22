@@ -12,9 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import java.time.OffsetDateTime;
+import java.time.Instant;
 import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 @DataJpaTest(properties = {
     "spring.flyway.enabled=false",
@@ -55,6 +57,22 @@ class SyncServiceTest {
 
         assertEquals(1, eventRepository.count());
         assertEquals(2, eventExternalRefRepository.count());
+    }
+
+    @Test
+    void syncYearUpdatesOnlyActiveProvider() {
+        SyncService service = getSyncService();
+
+        syncStatusRepository.saveAndFlush(new com.sportygroup.f1betting.entity.SyncStatus(null, "openf1", 2024, Instant.EPOCH));
+        syncStatusRepository.saveAndFlush(new com.sportygroup.f1betting.entity.SyncStatus(null, "ergast", 2024, Instant.EPOCH));
+
+        service.syncYear(2024);
+
+        var openf1 = syncStatusRepository.findByProviderNameAndYear("openf1", 2024).orElseThrow();
+        var ergast = syncStatusRepository.findByProviderNameAndYear("ergast", 2024).orElseThrow();
+
+        assertNotEquals(Instant.EPOCH, openf1.getLastSynced());
+        assertEquals(Instant.EPOCH, ergast.getLastSynced());
     }
 
     private SyncService getSyncService() {
