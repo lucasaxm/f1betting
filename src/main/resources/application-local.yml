@@ -14,6 +14,7 @@ spring:
 
 f1-external-api:
   active-provider: openf1
+  min-year: 2010
   providers:
     openf1:
       url: https://api.openf1.org

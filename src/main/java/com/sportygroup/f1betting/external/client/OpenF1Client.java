@@ -3,7 +3,7 @@ package com.sportygroup.f1betting.external.client;
 import com.sportygroup.f1betting.exception.ExternalEventIdMissingException;
 import com.sportygroup.f1betting.external.F1ExternalApi;
 import com.sportygroup.f1betting.external.dto.DriverDto;
-import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 import com.sportygroup.f1betting.external.dto.openf1.OpenF1DriverDto;
 import com.sportygroup.f1betting.external.dto.openf1.OpenF1SessionDto;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,9 +26,9 @@ public class OpenF1Client implements F1ExternalApi {
     }
 
     @Override
-    public List<EventDto> listEvents(Integer year,
-                                     String type,
-                                     String country) {
+    public List<ExternalEventDto> listEvents(Integer year,
+                                             String type,
+                                             String country) {
 
         return webClient.get()
             .uri(uri -> {

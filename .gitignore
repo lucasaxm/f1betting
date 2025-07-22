@@ -35,3 +35,4 @@ out/
 
 ### VS Code ###
 .vscode/
+/.repo-to-text-settings.yaml
