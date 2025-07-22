@@ -11,5 +11,5 @@ public record EventDto(String externalEventId,
                        String eventType,
                        Integer year,
                        String countryName,
-                       OffsetDateTime startDate) {
+                       OffsetDateTime dateStart) {
 }

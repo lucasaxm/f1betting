@@ -1,27 +1,44 @@
 package com.sportygroup.f1betting.service;
 
-import com.sportygroup.f1betting.external.F1ExternalApi;
+import com.sportygroup.f1betting.entity.Event;
+import com.sportygroup.f1betting.entity.EventExternalRef;
 import com.sportygroup.f1betting.external.dto.EventDto;
+import com.sportygroup.f1betting.repository.EventRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-@Service
-public class EventService {
-    private final F1ExternalApi f1ExternalApi;
+import java.time.Year;
 
-    public EventService(F1ExternalApi f1ExternalApi) {
-        this.f1ExternalApi = f1ExternalApi;
-    }
+@Service
+@RequiredArgsConstructor
+public class EventService {
+    private final SyncService syncService;
+    private final EventRepository eventRepository;
 
     public Page<EventDto> getEventsPage(Integer year, String type, String country, Pageable pageable) {
-        var events = f1ExternalApi.listEvents(year, type, country);
-        int total = events.size();
-        var pageContent = events.stream()
-            .skip(pageable.getOffset())
-            .limit(pageable.getPageSize())
-            .toList();
-        return new PageImpl<>(pageContent, pageable, total);
+        int syncYear = year != null ? year : Year.now().getValue();
+        try {
+            syncService.syncYear(syncYear);
+        } catch (RuntimeException ex) {
+            if (syncYear == Year.now().getValue()) {
+                throw ex;
+            }
+        }
+
+        Page<Event> page = eventRepository.findByFilter(year, type, country, pageable);
+        return page.map(event -> {
+            EventExternalRef ref = event.getEventExternalRefs().stream().findFirst().orElse(null);
+            return EventDto.builder()
+                .externalEventId(ref != null ? ref.getExternalId() : null)
+                .providerName(ref != null ? ref.getProviderName() : null)
+                .eventName(event.getName())
+                .eventType(event.getType())
+                .year(event.getYear())
+                .countryName(event.getCountry())
+                .dateStart(event.getDateStart())
+                .build();
+        });
     }
 }

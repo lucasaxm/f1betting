@@ -13,6 +13,7 @@ import java.util.Map;
 public class F1ApiProperties {
 
     private String activeProvider;
+    private Integer minYear;
     private Map<String, ProviderConfig> providers = new HashMap<>();
 
     @Getter
