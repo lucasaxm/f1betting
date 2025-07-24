@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sportygroup.f1betting.entity.Event;
 import com.sportygroup.f1betting.entity.EventExternalRef;
-import com.sportygroup.f1betting.entity.ProviderName;
+import com.sportygroup.f1betting.entity.Provider;
 import com.sportygroup.f1betting.external.dto.ExternalEventDto;
 import com.sportygroup.f1betting.repository.EventExternalRefRepository;
 import com.sportygroup.f1betting.repository.EventRepository;
+import com.sportygroup.f1betting.repository.ProviderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,11 +43,15 @@ class EventControllerIntegrationTest {
     EventRepository eventRepository;
     @Autowired
     EventExternalRefRepository eventExternalRefRepository;
+    @Autowired
+    ProviderRepository providerRepository;
 
     @BeforeEach
     void setup() {
         eventExternalRefRepository.deleteAll();
         eventRepository.deleteAll();
+
+        Provider provider = providerRepository.findByName("openf1").orElseThrow();
 
         Event e1 = new Event();
         e1.setName("B Race");
@@ -56,7 +61,7 @@ class EventControllerIntegrationTest {
         e1.setDateStart(OffsetDateTime.parse("2023-08-27T14:00:00Z"));
         eventRepository.save(e1);
         EventExternalRef ref1 = new EventExternalRef();
-        ref1.setProviderName(ProviderName.OPENF1);
+        ref1.setProvider(provider);
         ref1.setExternalId("1");
         ref1.setEvent(e1);
         eventExternalRefRepository.save(ref1);
@@ -69,7 +74,7 @@ class EventControllerIntegrationTest {
         e2.setDateStart(OffsetDateTime.parse("2024-08-25T14:00:00Z"));
         eventRepository.save(e2);
         EventExternalRef ref2 = new EventExternalRef();
-        ref2.setProviderName(ProviderName.OPENF1);
+        ref2.setProvider(provider);
         ref2.setExternalId("2");
         ref2.setEvent(e2);
         eventExternalRefRepository.save(ref2);
@@ -134,6 +139,26 @@ class EventControllerIntegrationTest {
                     return java.util.Collections.emptyList();
                 }
             };
+        }
+
+        @Bean
+        @Primary
+        public com.sportygroup.f1betting.service.SyncService syncService(
+            com.sportygroup.f1betting.repository.SyncStatusRepository syncStatusRepository,
+            com.sportygroup.f1betting.repository.EventRepository eventRepository,
+            com.sportygroup.f1betting.repository.EventExternalRefRepository eventExternalRefRepository,
+            com.sportygroup.f1betting.repository.ProviderRepository providerRepository,
+            com.sportygroup.f1betting.external.F1ExternalApi api,
+            com.sportygroup.f1betting.properties.F1ApiProperties props) {
+            Provider provider = new Provider();
+            provider.setName("openf1");
+            providerRepository.save(provider);
+            return new com.sportygroup.f1betting.service.SyncService(syncStatusRepository,
+                eventRepository,
+                eventExternalRefRepository,
+                providerRepository,
+                api,
+                props);
         }
     }
 }

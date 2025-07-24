@@ -2,10 +2,12 @@ package com.sportygroup.f1betting.service;
 
 import com.sportygroup.f1betting.external.F1ExternalApi;
 import com.sportygroup.f1betting.external.dto.ExternalEventDto;
+import com.sportygroup.f1betting.entity.Provider;
 import com.sportygroup.f1betting.entity.ProviderName;
 import com.sportygroup.f1betting.properties.F1ApiProperties;
 import com.sportygroup.f1betting.repository.EventExternalRefRepository;
 import com.sportygroup.f1betting.repository.EventRepository;
+import com.sportygroup.f1betting.repository.ProviderRepository;
 import com.sportygroup.f1betting.repository.SyncStatusRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ class SyncServiceTest {
     EventExternalRefRepository eventExternalRefRepository;
     @Autowired
     SyncStatusRepository syncStatusRepository;
+    @Autowired
+    ProviderRepository providerRepository;
 
     @Test
     void upsertEventDeduplicatesByNaturalKey() {
@@ -63,13 +67,15 @@ class SyncServiceTest {
     void syncYearUpdatesOnlyActiveProvider() {
         SyncService service = getSyncService();
 
-        syncStatusRepository.saveAndFlush(new com.sportygroup.f1betting.entity.SyncStatus(null, "openf1", 2024, Instant.EPOCH));
-        syncStatusRepository.saveAndFlush(new com.sportygroup.f1betting.entity.SyncStatus(null, "ergast", 2024, Instant.EPOCH));
+        Provider openf1Prov = providerRepository.findByName("openf1").orElseThrow();
+        Provider ergastProv = providerRepository.findByName("ergast").orElseThrow();
+        syncStatusRepository.saveAndFlush(new com.sportygroup.f1betting.entity.SyncStatus(null, openf1Prov, 2024, Instant.EPOCH));
+        syncStatusRepository.saveAndFlush(new com.sportygroup.f1betting.entity.SyncStatus(null, ergastProv, 2024, Instant.EPOCH));
 
         service.syncYear(2024);
 
-        var openf1 = syncStatusRepository.findByProviderNameAndYear("openf1", 2024).orElseThrow();
-        var ergast = syncStatusRepository.findByProviderNameAndYear("ergast", 2024).orElseThrow();
+        var openf1 = syncStatusRepository.findByProviderAndYear(openf1Prov, 2024).orElseThrow();
+        var ergast = syncStatusRepository.findByProviderAndYear(ergastProv, 2024).orElseThrow();
 
         assertNotEquals(Instant.EPOCH, openf1.getLastSynced());
         assertEquals(Instant.EPOCH, ergast.getLastSynced());
@@ -90,6 +96,12 @@ class SyncServiceTest {
         };
         F1ApiProperties props = new F1ApiProperties();
         props.setActiveProvider("openf1");
-        return new SyncService(syncStatusRepository, eventRepository, eventExternalRefRepository, dummy, props);
+        Provider openf1 = new Provider();
+        openf1.setName("openf1");
+        providerRepository.save(openf1);
+        Provider ergast = new Provider();
+        ergast.setName("ergast");
+        providerRepository.save(ergast);
+        return new SyncService(syncStatusRepository, eventRepository, eventExternalRefRepository, providerRepository, dummy, props);
     }
 }

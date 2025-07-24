@@ -10,8 +10,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import jakarta.persistence.Convert;
-import com.sportygroup.f1betting.entity.ProviderNameConverter;
+import com.sportygroup.f1betting.entity.Provider;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -21,13 +20,12 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import java.util.UUID;
 
-import com.sportygroup.f1betting.entity.ProviderName;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "driver_external_ref", uniqueConstraints = {
-    @UniqueConstraint(name = "uq_driver_ext_ref", columnNames = {"provider_name", "external_id"})
+    @UniqueConstraint(name = "uq_driver_ext_ref", columnNames = {"provider_id", "external_id"})
 })
 public class DriverExternalRef {
     @Id
@@ -35,10 +33,10 @@ public class DriverExternalRef {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Convert(converter = ProviderNameConverter.class)
     @NotNull
-    @Column(name = "provider_name", nullable = false, length = 50)
-    private ProviderName providerName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "provider_id", nullable = false)
+    private Provider provider;
 
     @Size(max = 100)
     @NotNull

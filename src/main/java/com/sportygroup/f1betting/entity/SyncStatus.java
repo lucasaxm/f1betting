@@ -2,13 +2,17 @@ package com.sportygroup.f1betting.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import com.sportygroup.f1betting.entity.Provider;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -17,7 +21,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "sync_status")
+@Table(name = "sync_status", uniqueConstraints = {
+        @jakarta.persistence.UniqueConstraint(name = "uq_sync_status_provider_year", columnNames = {"provider_id", "year"})
+})
 public class SyncStatus {
 
     @Id
@@ -25,8 +31,9 @@ public class SyncStatus {
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "provider_name", nullable = false, length = 50)
-    private String providerName;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "provider_id", nullable = false)
+    private Provider provider;
 
     @Column(name = "year", nullable = false)
     private Integer year;
@@ -34,9 +41,9 @@ public class SyncStatus {
     @Column(name = "last_synced", nullable = false)
     private Instant lastSynced;
 
-    public SyncStatus(UUID id, String providerName, Integer year, Instant lastSynced) {
+    public SyncStatus(UUID id, Provider provider, Integer year, Instant lastSynced) {
         this.id = id;
-        this.providerName = providerName;
+        this.provider = provider;
         this.year = year;
         this.lastSynced = lastSynced;
     }
