@@ -1,0 +1,21 @@
+spring:
+  application.name: f1betting
+  profiles.default: docker
+  docker:
+    compose:
+      enabled: false
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  datasource:
+    driver-class-name: org.postgresql.Driver
+

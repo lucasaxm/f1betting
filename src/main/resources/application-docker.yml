@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/f1betting
+    username: myuser
+    password: secret
+  docker:
+    compose:
+      enabled: true
+
+f1-external-api:
+  active-provider: openf1
+  min-year: 2025
+  providers:
+    openf1:
+      url: https://api.openf1.org

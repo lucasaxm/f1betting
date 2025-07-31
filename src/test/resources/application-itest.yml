@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    properties:
+      hibernate.globally_quoted_identifiers: true
+  flyway:
+    postgresql-extensions-enabled: true
+  main:
+    allow-bean-definition-overriding: true
+
+f1-external-api:
+  active-provider: openf1
+  providers:
+    openf1:
+      url: http://localhost
+  min-year: 2020
